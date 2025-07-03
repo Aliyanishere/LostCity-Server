@@ -1,0 +1,20 @@
+{
+  "name": "node-server",
+  "private": true,
+  "scripts": {
+    "start": "ts-node server.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@civic/auth": "^0.8.1",
+    "@types/cookie-parser": "^1.4.9",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "express": "^5.1.0"
+  }
+}
