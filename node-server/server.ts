@@ -1,8 +1,12 @@
 import cors from "cors";
 import express from "express";
 import cookieParser from "cookie-parser";
-import type { Request, Response, NextFunction, RequestHandler } from "express";
+import { getWallets } from "@civic/auth-web3/server";
 import { CivicAuth, CookieStorage } from "@civic/auth/server";
+import type { Request, Response, NextFunction, RequestHandler } from "express";
+
+import { BaseUser } from "./node_modules/@civic/auth/dist/types.js";
+import { UserDetails } from "./node_modules/@civic/auth-web3/dist/types.js";
 
 // Extend Express Request interface to include storage and civicAuth
 declare global {
@@ -74,9 +78,7 @@ declare global {
       res.status(500).send("CivicAuth is not initialized.");
       return;
     }
-    const url = await req.civicAuth.buildLoginUrl({
-      scopes: ["openid", "wallet", "email", "profile"],
-    });
+    const url = await req.civicAuth.buildLoginUrl();
 
     res.redirect(url.toString());
   });
@@ -144,7 +146,6 @@ declare global {
   // Apply authentication middleware to any routes that need it
   app.use("/auth", authMiddleware);
 
-  // Usage
   app.get(
     "/auth/profile",
     asyncHandler(async (req: Request, res: Response) => {
@@ -152,26 +153,21 @@ declare global {
         return res.status(500).send("CivicAuth is not initialized.");
       }
 
-      const loggedIn = await req.civicAuth.isLoggedIn();
-      if (!loggedIn) {
-        return res.status(401).send("Not logged in.");
-      }
-
       const user = await req.civicAuth.getUser();
-      console.log("Solana Wallet Address:", user?.email, {
-        email: user.email,
-        id: user?.id,
-        name: user?.name,
-        ...user,
-      });
+      const tokens = await req.civicAuth.getTokens();
+      const userDetails = {
+        ...(user as BaseUser & UserDetails & { idToken: string }),
+        idToken: tokens?.idToken || "",
+      };
+
+      if (!user) return res.status(401).send("Unathorized");
+      const wallets = await getWallets(userDetails);
 
       res.json({
         message: "Authenticated profile",
         user: {
-          email: user.email,
-          id: user?.id,
-          name: user?.name,
-          ...user,
+          ...userDetails,
+          wallets: wallets || [],
         },
       });
     })

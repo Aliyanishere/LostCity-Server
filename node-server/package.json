@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@civic/auth": "^0.8.1",
+    "@civic/auth-web3": "^0.6.2",
     "@types/cookie-parser": "^1.4.9",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
